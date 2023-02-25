@@ -1,0 +1,49 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import LoginView from '../views/LoginView.vue'
+import Test from '../views/Test.vue'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/',
+      redirect: '/home'
+    },
+    {
+      path: '/test',
+      component: Test
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
+      path: '/home',
+      name: 'home',
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/HomeView.vue'),
+      children:[
+        {
+          name: 'Welcome',
+          path: 'welcome',
+          component: () => import('../views/Welcome.vue')
+        },
+        {
+          name: 'ProjectDeposit',
+          path: 'projectDeposit',
+          component:() => import('../views/ProjectDeposit.vue')
+        },
+        {
+          name: 'FileDespoit',
+          path: 'fileDespoit',
+          component: () => import('../views/FileDeposit.vue')
+        }
+      ]
+    }
+  ]
+})
+
+export default router

@@ -1,0 +1,57 @@
+import http from './index.js'
+//并发上传（好几次请求同时发出）
+export async function uploadPromiseAll(files) {
+    const asyncTask = []
+    files.forEach(file => {
+        const fileData = new FormData()
+        fileData.append(file.name, file)
+        const aTask = http.post('/file/uploadFile', fileData, { params: { username: 'xqc' } })
+        asyncTask.push(aTask)
+    })
+    const reses = await Promise.allSettled(asyncTask)
+    reses.forEach((res) => {
+        if(res.status === 'fulfilled'){
+            const resData = res.value.data
+            if(resData.success){
+                window.$message.success(resData.data.msg)
+            }else{
+                window.$message.error(resData.data.msg)
+            }
+        }else{
+            window.$message.error(`网络请求错误！！！`)
+        }
+    })
+}
+
+
+/*获取用户所拥有的文件信息 */
+export async function getFilesInfo(username){
+    const res = await http.get('/file/getFilesInfo', { params: { username }})
+    const resData = res.data
+    if(resData.success){
+        return resData.data.files
+    }else{
+        return null
+    }
+}
+
+export async function verifyMD5(fileInfo){
+    const res = await http.post('/file/verifyFileMD5', null, { params: fileInfo })
+    if(res.data && res.data.success){
+        return res.data.data
+    }else{
+        console.log(res)
+        return null
+    }
+}
+
+export async function deleteFile(filename, username){
+    const res = await http.delete('/file/delete', { params: { username, filename } } )
+    console.log(res)
+}
+
+export async function getFileBody(filename, username){
+    const res = await http.get('/file/download', { params: { username, filename} } )
+    console.log(res)
+}
+
