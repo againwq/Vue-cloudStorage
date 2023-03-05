@@ -40,9 +40,6 @@ export default {
                 选择文件
             </n-button>
             <input ref="input" @change="getFiles" type="file" multiple style="display: none">
-            <n-button v-show="files.length != 0" class="uploadButton" tertiary round type="success">
-                全部开始
-            </n-button>
         </div>
         <div class="files">
             <SelectFileStyle :options="options" />
@@ -59,9 +56,5 @@ export default {
 .head{
     display: flex;
     position: relative;
-}
-.uploadButton{
-    position: absolute;
-    right: 10px;
 }
 </style>

@@ -1,32 +1,34 @@
 import { ref } from 'vue'
 import { store } from '../store/index.js'
-import { uploadPromiseAll, verifyMD5 } from '../axios/fileHandle.js'
+import { uploadChunkLine, verifyMD5 } from '../axios/fileHandle.js'
 import { EventBus, EventType } from '../EventBus'
 import {computeFileMD5} from '../utils/computeMD5.js'
+import {BreakpointUpload} from '../utils/breakpointResume.js'
 
 export const files = ref([]) //存储用户选择上传的文件
-
 /**
  * 
  * @param {File} file 
  * @param {string} dirPath 
- * @param {Function} handleNewFile 
- * @param {Function} handleQuickFinish 
- * @param {Function} handleIsUploadFile 
  */
-async function invaildMD5(file, dirPath = '/default', handleNewFile, handleQuickFinish, handleIsUploadFile){
+async function invaildMD5AndUploadFile(file, dirPath = '/default'){
     const MD5 = await computeFileMD5(file)
     const type = file.name.split('.')[file.name.split().length - 1]
     const result = await verifyMD5({ username: store.username, name: file.name, size: file.size, type, MD5, dirPath})
+    console.log(result)
+    //如果是新的文件，处理方法
     if(result && result.isNew){
-        handleNewFile(file)
+        const chunkList = await BreakpointUpload.run(file ,MD5)
+        await uploadChunkLine(chunkList, store.username, MD5, dirPath)
     }
+    //如果是已经有的文件，秒传
     else if(result && result.quickFinish){
-        handleQuickFinish(file)
+        console.log('秒传')
     }
+    //如果是已经上传了部分的文件，继续上传
     else if(result && result.isUpload){
         const chunkCount = result.chunkCount
-        handleIsUploadFile(file, chunkCount)
+        console.log(`${chunkCount}个切片已经上传`)
     }
 }
 
@@ -41,6 +43,7 @@ export async function getFiles(e) {
            window.$message.error(`${file.name}文件重复了`)
         }else{
             files.value.push(file)
+            await invaildMD5AndUploadFile(file)
         }
     }
 }
@@ -48,12 +51,3 @@ export async function getFiles(e) {
 /**
  * 
  */
-export async function uploadFiles(){
-    const verifyMD5AsyncTask = []
-    files.value.forEach((file) => {
-        const aTask = invaildMD5()
-    })
-    /* await uploadPromiseAll(files.value)
-    EventBus.emit(EventType.userFilesHandle, 'addFile')
-    files.value = [] */
-}

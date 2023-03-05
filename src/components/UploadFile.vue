@@ -2,7 +2,6 @@
 /*文件上传的组件 */
 import {  h } from 'vue';
 import {  NButton, useDialog } from 'naive-ui';
-import { uploadFiles } from '../control/selectFilesControl.js'
 import { CloudUploadOutline as uploadIcon, AddOutline as addDirIcon } from '@vicons/ionicons5'
 import ShowSelectFile from './ShowSelectFile.vue'
 export default {
@@ -17,7 +16,6 @@ export default {
         const dialog = useDialog()
         return {
             props,
-            uploadFiles,
             renderUpload: () => h(uploadIcon),
             renderAddDir: () => h(addDirIcon),
             showFilesInfo: () => {

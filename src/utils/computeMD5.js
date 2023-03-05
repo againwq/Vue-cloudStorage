@@ -8,14 +8,13 @@ import SparkMD5 from 'spark-md5';
  export function computeFileMD5(file) { 
    return new Promise((resolve, reject) => {
       let blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
-      let chunkSize = 2097152;  // 按照一片 2MB 分片
+      let chunkSize = 5 * 1024 * 1024;  // 按照一片 5MB 分片
       let chunks = Math.ceil(file.size / chunkSize); // 片数
       let currentChunk = 0;
       let spark = new SparkMD5.ArrayBuffer();
       let fileReader = new FileReader();
       
       fileReader.onload = function (e) {
-        console.log('read chunk nr', currentChunk + 1, 'of', chunks);
         spark.append(e.target.result);
         currentChunk++;
 
@@ -33,7 +32,7 @@ import SparkMD5 from 'spark-md5';
         console.warn('oops, something went wrong.');
         reject(e);
       };
-      
+  
       function loadNext() {
         let start = currentChunk * chunkSize;
         let end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
